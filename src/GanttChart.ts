@@ -16,11 +16,13 @@ import { RenderOptions, HighContrastColors, IDataConfig } from '@visualbi/bifros
 import { SelectionIdBuilder } from '@visualbi/bifrost-powerbi/dist/SelectionIdBuilder';
 import { loadEditor, removeEditor } from '@visualbi/powerbi-editor/dist/gantt/editor';
 import * as SettingsSchemaTypeDef from '@visualbi/bifrost-powerbi/dist/types/SettingsSchemaTypeDef';
-
+/* @ifdef isPrivateBuild */
 import { ILicenseInfo } from './onlineLicense/helper';
-// import { Logger } from '@lumel/valq-engine/dist/Debug/Logger';
-import { Utils } from './Utils'
 import { EnumerationKeys } from './onlineLicense/EnumerationKeys';
+import licensor, { LicenseState } from './onlineLicense/Licensor';
+import logger from './onlineLicense/logger';
+/* @endif */
+import { Utils } from './Utils'
 import { VisualSettings, ValidValues } from './settings';
 import { AnychartSelectionManager } from './AnychartSelectionManager';
 import { Util } from './Util';
@@ -30,7 +32,6 @@ import { ProProperties } from './ProProperties';
 import { GanttConditionalFormatting, IMAGE_URL } from './GanttConditionalFormatting';
 import { MilestoneConfig, JSONArrayDef, DynamicSummaryTableField } from './interfaces';
 import { UtilityMenu } from './UtilityMenu';
-import licensor, { LicenseState } from './onlineLicense/Licensor';
 
 import { VISUAL_VERSION, COMPONENT_NAME, LICENSE_KEY, CUSTOMER_NAME, COMPONENT_URL } from './licence';
 //import write Back
@@ -42,7 +43,6 @@ const anychartCustomBuildMinJs = require('@visualbi/powerbi-editor/dist/gantt/ex
 const moment = require('moment');
 const escape = require('lodash.escape');
 moment.suppressDeprecationWarnings = true;
-import logger from './onlineLicense/logger';
 
 import {
     DisplayData,
@@ -198,6 +198,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
                 handlers: <Record<string, any>>MigrationHandlers.GET_HANDLERS(),
                 settings: MigrationSettings
             },
+            /* @ifdef isPrivateBuild */
             licensor: {
                 handler: () => {
                     licensor.init(options.host)
@@ -214,6 +215,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
                     this.validateLicense()
                 }
             }
+            /* @endif */
         });
     }
 
@@ -225,7 +227,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
         this.prevViewMode = viewMode;
         return isViewModeChange;
     }
-
+    /* @ifdef isPrivateBuild */
     private validateLicense() {
         const isViewModeChanged = this.checkIsModeChange(this.option.viewMode)
         licensor.validate(this.option.viewMode, isViewModeChanged, this.visualSettings).catch((err) => {
@@ -294,7 +296,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
 
         logger('Is Sample Report? ' + JSON.stringify(licenseInfo.isSampleReport), 'info');
     }
-
+    /* @endif */
     initPrintLayout = () => {
         window.onbeforeprint = () => {
             document.getElementById('top-nav-bar').style.opacity = '0';

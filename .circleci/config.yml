@@ -149,10 +149,16 @@ jobs:
                 paths:
                     - .yarn/cache
                     - .yarn/unplugged
-          # - run:
-          #       name: Clean files
-          #       command: |
-          #           yarn clean
+          - run:
+                name: clean online license related code
+                command: |
+                    if [ -e "src/onlineLicense" ]; then
+                      rm -rf src/onlineLicense
+                    fi
+                    if [ -e "src/Config.ts" ]; then
+                      rm src/Config.ts
+                    fi
+                    node ZUtils/preBuilds.js
           # - run:
           #       name: Build files
           #       command: |
