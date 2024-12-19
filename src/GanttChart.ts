@@ -16,11 +16,13 @@ import { RenderOptions, HighContrastColors, IDataConfig } from '@visualbi/bifros
 import { SelectionIdBuilder } from '@visualbi/bifrost-powerbi/dist/SelectionIdBuilder';
 import { loadEditor, removeEditor } from '@visualbi/powerbi-editor/dist/gantt/editor';
 import * as SettingsSchemaTypeDef from '@visualbi/bifrost-powerbi/dist/types/SettingsSchemaTypeDef';
-
+/* @ifdef isPrivateBuild */
 import { ILicenseInfo } from './onlineLicense/helper';
-// import { Logger } from '@lumel/valq-engine/dist/Debug/Logger';
-import { Utils } from './Utils'
 import { EnumerationKeys } from './onlineLicense/EnumerationKeys';
+import licensor, { LicenseState } from './onlineLicense/Licensor';
+import logger from './onlineLicense/logger';
+/* @endif */
+import { Utils } from './Utils'
 import { VisualSettings, ValidValues } from './settings';
 import { AnychartSelectionManager } from './AnychartSelectionManager';
 import { Util } from './Util';
@@ -30,7 +32,6 @@ import { ProProperties } from './ProProperties';
 import { GanttConditionalFormatting, IMAGE_URL } from './GanttConditionalFormatting';
 import { MilestoneConfig, JSONArrayDef, DynamicSummaryTableField } from './interfaces';
 import { UtilityMenu } from './UtilityMenu';
-import licensor, { LicenseState } from './onlineLicense/Licensor';
 
 import { VISUAL_VERSION, COMPONENT_NAME, LICENSE_KEY, CUSTOMER_NAME, COMPONENT_URL } from './licence';
 //import write Back
@@ -42,7 +43,6 @@ const anychartCustomBuildMinJs = require('@visualbi/powerbi-editor/dist/gantt/ex
 const moment = require('moment');
 const escape = require('lodash.escape');
 moment.suppressDeprecationWarnings = true;
-import logger from './onlineLicense/logger';
 
 import {
     DisplayData,
@@ -198,6 +198,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
                 handlers: <Record<string, any>>MigrationHandlers.GET_HANDLERS(),
                 settings: MigrationSettings
             },
+            /* @ifdef isPrivateBuild */
             licensor: {
                 handler: () => {
                     licensor.init(options.host)
@@ -214,6 +215,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
                     this.validateLicense()
                 }
             }
+            /* @endif */
         });
     }
 
@@ -225,7 +227,7 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
         this.prevViewMode = viewMode;
         return isViewModeChange;
     }
-
+    /* @ifdef isPrivateBuild */
     private validateLicense() {
         const isViewModeChanged = this.checkIsModeChange(this.option.viewMode)
         licensor.validate(this.option.viewMode, isViewModeChanged, this.visualSettings).catch((err) => {
@@ -240,106 +242,61 @@ export class GanttChart extends BifrostVisual.BifrostVisual {
         visualCurrentDate: Date
     ): void {
         logger('************ Appsource License Information ************', 'info');
-        // Logger.info('************ Appsource License Information ************', true);
 
         logger('User License Plans:', 'info');
-        // Logger.info('User License Plans:', true);
 
         logger(licenseInfo.plans.length ? JSON.stringify(licenseInfo.plans, null, 2) : 'Empty', 'info');
-        // Logger.info(
-        //     licenseInfo.plans.length ? JSON.stringify(licenseInfo.plans, null, 2) : 'Empty',
-        //     true
-        // );
 
         logger('Applied License Plan:', 'info');
-        // Logger.info('Applied License Plan:', true);
 
         logger(JSON.stringify(licenseInfo.currentPlan, null, 2), 'info');
-        // Logger.info(JSON.stringify(licenseInfo.currentPlan, null, 2), true);
 
         logger('Stored License Plan:', 'info');
-        // Logger.info('Stored License Plan:', true);
 
         logger(JSON.stringify(licenseInfo.storedPlan, null, 2), 'info');
-        // Logger.info(JSON.stringify(licenseInfo.storedPlan, null, 2), true);
 
         logger('Tenant License Plan:', 'info');
-        // Logger.info('Tenant License Plan:', true);
 
         logger(JSON.stringify(licenseInfo.tenantPlan, null, 2), 'info');
-        // Logger.info(JSON.stringify(licenseInfo.tenantPlan, null, 2), true);
 
         logger('Model Creation Date:', 'info');
-        // Logger.info('Model Creation Date:', true);
-
 
         logger(licenseInfo.modelCreationDate, 'info');
-        // Logger.info(licenseInfo.modelCreationDate, true);
 
         logger('Model Expiry Date:', 'info');
-        // Logger.info('Model Expiry Date:', true);
 
         logger(licenseInfo.modelExpiryDate, 'info');
-        // Logger.info(licenseInfo.modelExpiryDate, true);
 
         logger('Current Date:', 'info');
-        // Logger.info('Current Date:', true);
-
 
         logger(visualCurrentDate.toString(), 'info');
-        // Logger.info(visualCurrentDate.toString(), true);
 
         logger('Offline License Expiry Date:', 'info');
-        // Logger.info('Offline License Expiry Date:', true);
 
         logger(licenseInfo.offlineLicenseExpiryDate, 'info');
-        // Logger.info(licenseInfo.offlineLicenseExpiryDate, true);
 
         logger('License Validation Status:', 'info');
-        // Logger.info('License Validation Status:', true);
-
 
         logger(licenseStates
             .map((licenseState) => EnumerationKeys.getLicenseStateKey(licenseState))
             .join(', '), 'info');
-        // Logger.info(
-        //     licenseStates
-        //         .map((licenseState) => EnumerationKeys.getLicenseStateKey(licenseState))
-        //         .join(', '),
-        //     true
-        // );
 
         logger('Host Environment:', 'info');
-        // Logger.info('Host Environment:', true);
 
         logger(
             EnumerationKeys.getCustomVisualHostEnvKey(licensor.getVisualHost().hostEnv), 'info');
-        // Logger.info(
-        //     EnumerationKeys.getCustomVisualHostEnvKey(licensor.getVisualHost().hostEnv),
-        //     true
-        // );
 
         logger('License Manager:', 'info');
-        // Logger.info('License Manager:', true);
-
 
         logger(Utils.isEmpty(licensor.getLicenseManagerApplied())
             ? 'Empty'
             : licensor.getLicenseManagerApplied(), 'info');
-        // Logger.info(
-        //     Utils.isEmpty(licensor.getLicenseManagerApplied())
-        //         ? 'Empty'
-        //         : licensor.getLicenseManagerApplied(),
-        //     true
-        // );
 
         logger('Is Under Free Plan? ' + JSON.stringify(licenseInfo.isFreeLicensePlan), 'info');
-        // Logger.info('Is Under Free Plan? ' + JSON.stringify(licenseInfo.isFreeLicensePlan), true);
 
         logger('Is Sample Report? ' + JSON.stringify(licenseInfo.isSampleReport), 'info');
-        // Logger.info('Is Sample Report? ' + JSON.stringify(licenseInfo.isSampleReport), true);
     }
-
+    /* @endif */
     initPrintLayout = () => {
         window.onbeforeprint = () => {
             document.getElementById('top-nav-bar').style.opacity = '0';
